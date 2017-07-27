@@ -1,0 +1,36 @@
+# /instance/config.py
+
+import os
+
+class Config(object):
+    """Parent config class."""
+    DEBUG = False
+    CSRF_ENABLED = True
+    SECRET = os.getenv('SECRET')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+
+class DevelopmentConfig(Config):
+    """Configs for development"""
+    DEBUG = True
+
+class TestingConfig(Config):
+    """Configs for testing, with a separate test db"""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "postgresql://localhost/test_db"
+    DEBUG = True
+
+class StagingConfig(Config):
+    """Configs for staging"""
+    DEBUG = True
+
+class ProductionConfig(Config):
+    """Configs for production"""
+    DEBUG = False
+    TESTING = False
+
+app_config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'staging': StagingConfig,
+    'production': ProductionConfig,
+}
