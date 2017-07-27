@@ -22,7 +22,7 @@ class BucketlistTestCase(unittest.TestCase):
 
     def test_bucketlist_creation(self):
         """ Test API can creat a bucket using POST """
-        res = self.client().post('/bucketlist', data=self.bucketlist)
+        res = self.client().post('/bucketlist/', data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Go to Borabora', str(res.data))
 
@@ -33,5 +33,5 @@ class BucketlistTestCase(unittest.TestCase):
             db.session.remove()
             db.drop_all()
 
-if __name__== "__main__":
+if __name__ == "__main__":
     unittest.main()
