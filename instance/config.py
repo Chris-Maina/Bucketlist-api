@@ -6,8 +6,8 @@ class Config(object):
     """Parent config class."""
     DEBUG = False
     CSRF_ENABLED = True
-    SECRET = os.getenv('SECRET')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SECRET = "hardworkpayseverytime"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:chris@localhost:5432/flask_api"
 
 class DevelopmentConfig(Config):
     """Configs for development"""
