@@ -25,4 +25,13 @@ class BucketlistTestCase(unittest.TestCase):
         res = self.client().post('/bucketlist', data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Go to Borabora', str(res.data))
-        
+
+    def tearDown(self):
+        """teardown all variables"""
+        with self.app.app_context():
+            # drop all tables
+            db.session.remove()
+            db.drop_all()
+
+if __name__== "__main__":
+    unittest.main()
