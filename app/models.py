@@ -1,6 +1,10 @@
 # app/models.py
 from app import db
 from flask_bcrypt import Bcrypt
+import jwt
+from datetime import datetime, timedelta
+
+SECRET_KEY = "hardworkpayseverytime"
 
 
 class User(db.Model):
@@ -28,6 +32,39 @@ class User(db.Model):
         """ Save user in the db """
         db.session.add(self)
         db.session.commit()
+        
+    def generate_token(self, user_id):
+        """Code to generate and encode a token before its sent to user"""
+        try:
+            # set up a payload with an expiration time
+            payload = {
+                'exp': datetime.utcnow() + timedelta(minutes=5),
+                'iat': datetime.utcnow(),
+                'sub': user_id
+            }
+            # create the byte string encoded token using payload and SECRET key
+            jwt_string = jwt.encode(
+                payload,
+                SECRET_KEY,
+                algorithm='HS256'
+            )
+            return jwt_string
+        except Exception as e:
+            # return an error in string format if an exception occurs
+            return str(e)
+
+    @staticmethod
+    def decode_token(token):
+        """ Handles the decoding of a token from the Authorization header"""
+        try:
+            # Decode token with our secret key
+            payload = jwt.decode(token, SECRET_KEY)
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            # token has expired
+            return "Timed out. Please login to get a new token"
+        except jwt.InvalidTokenError:
+            return "Invalid token. Please register or login"
 
 
 class Bucketlist(db.Model):
