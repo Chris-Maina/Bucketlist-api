@@ -25,6 +25,23 @@ class BucketlistTestCase(unittest.TestCase):
         res = self.client().post('/bucketlist/', data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Go to Borabora', str(res.data))
+    
+    def test_api_can_get_all_buckets(self):
+        """Test API can get buckets using GET"""
+        res = self.client().post('/bucketlist/', data=self.bucketlist)
+        self.assertEqual(res.status_code, 201)
+        res = self.client().get('/bucketlist/')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('Go to Borabora', str(res.data))
+
+    def test_bucket_can_be_edited(self):
+        """Test API can edit an existing bucket using PUT"""
+        res = self.client().post('/bucketlist/', data={'name':'Eat,pray and code'})
+        self.assertEqual(res.status_code, 201)
+        res = self.client().put('/bucketlist/1', data={'name':'Dont just eat, but also pray and code'})
+        self.assertEqual(res.status_code, 200)
+        results = self.client().get('/bucketlist/1')
+        self.assertIn('Dont just eat', str(results.data))
 
     def tearDown(self):
         """teardown all variables"""
