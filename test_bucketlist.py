@@ -43,6 +43,16 @@ class BucketlistTestCase(unittest.TestCase):
         results = self.client().get('/bucketlist/1')
         self.assertIn('Dont just eat', str(results.data))
 
+    def test_bucketlist_deletion(self):
+        """Test API can delete an existing bucket using DELETE request"""
+        res = self.client().post('/bucketlist/', data={'name':'Eat,pray and code'})
+        self.assertEqual(res.status_code, 201)
+        res = self.client().delete('/bucketlist/1')
+        self.assertEqual(res.status_code, 200)
+        # Test to see if it exists after deletion
+        results = self.client().get('/bucketlist/1')
+        self.assertEqual(results.status_code, 404)
+
     def tearDown(self):
         """teardown all variables"""
         with self.app.app_context():
