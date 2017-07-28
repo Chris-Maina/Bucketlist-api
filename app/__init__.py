@@ -56,4 +56,35 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
+    @app.route('/bucketlist/<int:id>', methods=['PUT','GET'])
+    def bucket_edit(id, **kwargs):
+        # retrieve a bucketlist using its ID
+        bucketlist = Bucketlist.query.filter_by(id=id).first()
+        if not bucketlist:
+            # if empty raise a 404 error
+            abort(404)
+        
+        if request.method == 'PUT':
+            name = str(request.data.get('name', ''))
+            bucketlist.name = name
+            bucketlist.save()
+            response = jsonify({
+                'id': bucketlist.id,
+                'name': bucketlist.name,
+                'date_created': bucketlist.date_created,
+                'date_modified': bucketlist.date_modified
+            })
+            response.status_code = 200
+            return response
+        else:
+            # GET
+            response = jsonify({
+                'id': bucketlist.id,
+                'name': bucketlist.name,
+                'date_created': bucketlist.date_created,
+                'date_modified': bucketlist.date_modified
+            })
+            response.status_code = 200
+            return response
+    
     return app
