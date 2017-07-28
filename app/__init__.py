@@ -56,14 +56,15 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
-    @app.route('/bucketlist/<int:id>', methods=['PUT','GET'])
+    @app.route('/bucketlist/<int:id>', methods=['PUT', 'GET', 'DELETE'])
     def bucket_edit(id, **kwargs):
+        """Handles editing and deletion of specific bucket using id"""
         # retrieve a bucketlist using its ID
         bucketlist = Bucketlist.query.filter_by(id=id).first()
         if not bucketlist:
             # if empty raise a 404 error
             abort(404)
-        
+
         if request.method == 'PUT':
             name = str(request.data.get('name', ''))
             bucketlist.name = name
@@ -76,6 +77,15 @@ def create_app(config_name):
             })
             response.status_code = 200
             return response
+
+        elif request.method == 'DELETE':
+            bucketlist.delete()
+            response = jsonify({
+                "message": "bucketlist {} deleted successfully".format(bucketlist.id) 
+            })
+            response.status_code = 200
+            return response
+
         else:
             # GET
             response = jsonify({
