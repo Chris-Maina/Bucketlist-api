@@ -74,14 +74,31 @@ class BucketlistTestCase(unittest.TestCase):
 
     def test_bucket_can_be_edited(self):
         """Test API can edit an existing bucket using PUT"""
-        res = self.client().post(
-            '/bucketlist/', data={'name': 'Eat,pray and code'})
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        # create a bucket
+        res = self.client().post('/bucketlist/',
+                                 headers=dict(
+                                     Authorization="Bearer " + access_token),
+                                 data={'name': 'Hiking'})
         self.assertEqual(res.status_code, 201)
-        res = self.client().put(
-            '/bucketlist/1', data={'name': 'Dont just eat, but also pray and code'})
+
+        # get the bucket created
+        bucket_to_edit = json.loads(res.data.decode())
+
+        # edit the bucket
+        res = self.client().put("/bucketlist/{}".format(bucket_to_edit['id']),
+                                headers=dict(
+                                    Authorization="Bearer " + access_token),
+                                data={'name': 'Hike in Ngong hills'})
         self.assertEqual(res.status_code, 200)
-        results = self.client().get('/bucketlist/1')
-        self.assertIn('Dont just eat', str(results.data))
+
+        # get the edited bucket
+        results = self.client().get("/bucketlist/{}".format(bucket_to_edit['id']),
+                                    headers=dict(Authorization="Bearer " + access_token))
+        self.assertIn('Hike in', str(results.data))
 
     def test_bucketlist_deletion(self):
         """Test API can delete an existing bucket using DELETE request"""
