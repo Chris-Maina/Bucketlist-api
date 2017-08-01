@@ -102,13 +102,30 @@ class BucketlistTestCase(unittest.TestCase):
 
     def test_bucketlist_deletion(self):
         """Test API can delete an existing bucket using DELETE request"""
-        res = self.client().post(
-            '/bucketlist/', data={'name': 'Eat,pray and code'})
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        # create a bucket
+        res = self.client().post('/bucketlist/',
+                                 headers=dict(
+                                     Authorization="Bearer " + access_token),
+                                 data={'name': 'Hiking'})
         self.assertEqual(res.status_code, 201)
-        res = self.client().delete('/bucketlist/1')
+
+        # get bucket to delete
+        bucket_to_delete = json.loads(res.data.decode())
+
+        # delete bucket created
+        res = self.client().delete('/bucketlist/{}'.format(bucket_to_delete['id']),
+                                    headers=dict(Authorization="Bearer "+ access_token)
+                                    )
         self.assertEqual(res.status_code, 200)
+
         # Test to see if it exists after deletion
-        results = self.client().get('/bucketlist/1')
+        results = self.client().get('/bucketlist/{}'.format(bucket_to_delete['id']),
+                                    headers=dict(Authorization="Bearer "+ access_token)
+                                    )
         self.assertEqual(results.status_code, 404)
 
     def tearDown(self):
