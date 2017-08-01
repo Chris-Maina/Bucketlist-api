@@ -18,8 +18,7 @@ def create_app(config_name):
      loads it with configs using app.config,
      connects it with DB,
      returns it  """
-    from models import Bucketlist
-    from models import User
+    from models import Bucketlist, User
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -137,43 +136,43 @@ def create_app(config_name):
             return make_response(jsonify(results)), 200
 
     @app.route('/bucketlist/<int:id>', methods=['PUT', 'GET', 'DELETE'])
+    @auth_required
     def bucket_edit(id, **kwargs):
         """Handles editing and deletion of specific bucket using id"""
-        # retrieve a bucketlist using its ID
-        bucketlist = Bucketlist.query.filter_by(id=id).first()
-        if not bucketlist:
-            # if empty raise a 404 error
+        # retrieve a bucket using its ID
+        bucket = Bucketlist.query.filter_by(id=id).first()
+        if not bucket:
+            # if empty raise a 404 error. No bucket with this ID
             abort(404)
 
         if request.method == 'PUT':
+            # obtain new name form request
             name = str(request.data.get('name', ''))
-            bucketlist.name = name
-            bucketlist.save()
+            bucket.name = name
+            bucket.save()
             response = jsonify({
-                'id': bucketlist.id,
-                'name': bucketlist.name,
-                'date_created': bucketlist.date_created,
-                'date_modified': bucketlist.date_modified
+                'id': bucket.id,
+                'name': bucket.name,
+                'date_created': bucket.date_created,
+                'date_modified': bucket.date_modified,
+                'created_by': bucket.created_by
             })
-            response.status_code = 200
-            return response
+            return make_response(response), 200
 
         elif request.method == 'DELETE':
-            bucketlist.delete()
-            response = jsonify({
-                "message": "bucketlist {} deleted successfully".format(bucketlist.id)
-            })
-            response.status_code = 200
-            return response
+            bucket.delete()
+            return {
+                'message': "bucket {} deleted".format(bucket['id'])
+            }, 200
 
         else:
-            # GET
+            # handle GET
             response = jsonify({
-                'id': bucketlist.id,
-                'name': bucketlist.name,
-                'date_created': bucketlist.date_created,
-                'date_modified': bucketlist.date_modified
+                'id': bucket.id,
+                'name': bucket.name,
+                'date_created': bucket.date_created,
+                'date_modified': bucket.date_modified,
+                'created_by': bucket.created_by
             })
-            response.status_code = 200
-            return response
+            return make_response(response), 200
     return app
