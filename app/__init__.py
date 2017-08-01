@@ -2,7 +2,8 @@
 
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
-from flask import request, jsonify, abort
+from flask import request, jsonify, abort, make_response
+
 
 # local import
 from instance.config import app_config
@@ -15,7 +16,8 @@ def create_app(config_name):
      loads it with configs using app.config,
      connects it with DB,
      returns it  """
-    from app.models import Bucketlist
+    from models import Bucketlist
+    from models import User   
 
 
     app = FlaskAPI(__name__, instance_relative_config=True)
@@ -23,6 +25,36 @@ def create_app(config_name):
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+
+    @app.route('/auth/register/', methods=['POST'])
+    def register():
+        # Query to see if a user already exists
+        user = User.query.filter_by(email=request.data['email']).first()
+        if not user:
+            # No user, so register
+            try:
+                # Register user
+                email = request.data['email']
+                password = request.data['password']
+                user = User(email=email, password=password)
+                user.save()
+                response = {
+                    'message': 'You have been registered successfully. Please login'
+                }
+                # return the response and a status code 201 (created)
+                return make_response(jsonify(response)), 201
+            except Exception as e:
+                # when there is an error, return error as message
+                response = {
+                    'message': str(e)
+                }
+                return make_response(jsonify(response)), 401
+        else:
+            # There is a user. Return a message user already exists
+            response = {
+                'message': 'User already exists. Please login.'
+            }
+            return make_response(jsonify(response)), 202
 
     @app.route('/bucketlist/', methods=['POST', 'GET'])
     def bucketlists():
@@ -95,10 +127,5 @@ def create_app(config_name):
                 'date_modified': bucketlist.date_modified
             })
             response.status_code = 200
-            return response
-
-    # import the authentication blueprint and register it on the app
-    from .auth import auth_blueprint
-    app.register_blueprint(auth_blueprint)
-    
+            return response    
     return app
