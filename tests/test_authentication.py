@@ -4,7 +4,11 @@ import json
 from app import create_app, db
 
 class AuthenticationTestCase(unittest.TestCase):
-    """Test case for authentication blueprint"""
+    """Test case for authentication blueprint
+    Test user registration
+    Test user login
+    Test user login with non existent email/password
+    """
 
     def setUp(self):
         """Set up test env, test client and user"""
@@ -42,3 +46,15 @@ class AuthenticationTestCase(unittest.TestCase):
         self.assertEqual(result['message'], "You are logged in successfully")
         self.assertEqual(login_res.status_code, 200)
         self.assertTrue(result['access_token'])
+
+    def test_login_non_existent_user(self):
+        """Tests user login with non existent email&password"""
+        user_details = {
+            'email': "test@gmail.com",
+            'password': "testpassword"
+        }
+        res = self.client().post('/auth/login/', data=user_details)
+        result = json.loads(res.data.decode())
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(result['message'], "Invalid email or password, Please try again")
+        
