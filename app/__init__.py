@@ -75,7 +75,7 @@ def create_app(config_name):
         else:
             # User does not exist, status_code=UNAUTHORIZED
             response = {
-                'message': "Invalid email or password, Please try agaon"
+                'message': "Invalid email or password, Please try again"
             }
             return make_response(jsonify(response)), 401
 
