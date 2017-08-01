@@ -27,14 +27,30 @@ def create_app(config_name):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    #def auth_required(f):
-    #    @wraps(f)
-    #    def wrapper(*args, **kwargs):
-
-    #    return wrapper
+    def auth_required(f):
+        """Authenticate users. Handles token"""
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # Get access token from the header
+            auth_header = request.headers.get('Authorization')
+            access_token = auth_header.split(" ")[1]
+            if access_token:
+                # Decode the token and get user id
+                user_id = User.decode_token(access_token)
+                if not isinstance(user_id, str):
+                    return f(user_id=user_id, *args, **kwargs)
+                else:
+                    # user id is a string(error)
+                    message = user_id
+                    response = {
+                        'message': message
+                    }
+                    return make_response(jsonify(response)), 401
+        return wrapper
 
     @app.route('/auth/register/', methods=['POST'])
     def register():
+        """Handles registration of users"""
         # Query to see if a user already exists
         user = User.query.filter_by(email=request.data['email']).first()
         if not user:
@@ -87,51 +103,38 @@ def create_app(config_name):
             return make_response(jsonify(response)), 401
 
     @app.route('/bucketlist/', methods=['POST', 'GET'])
-    def bucketlists():
-        # Get access token from the header
-        auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
+    @auth_required
+    def bucketlists(user_id):
+        """Handles bucket creation"""
+        if request.method == "POST":
+            name = str(request.data.get('name', ''))
+            if name:
+                bucketlist = Bucketlist(name=name, created_by=user_id)
+                bucketlist.save()
+                response = jsonify({
+                    'id': bucketlist.id,
+                    'name': bucketlist.name,
+                    'date_created': bucketlist.date_created,
+                    'date_modified': bucketlist.date_modified,
+                    'created_by': user_id
+                })
 
-        if access_token:
-            # Decode the token and get user id
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                if request.method == "POST":
-                    name = str(request.data.get('name', ''))
-                    if name:
-                        bucketlist = Bucketlist(name=name, created_by=user_id)
-                        bucketlist.save()
-                        response = jsonify({
-                            'id': bucketlist.id,
-                            'name': bucketlist.name,
-                            'date_created': bucketlist.date_created,
-                            'date_modified': bucketlist.date_modified,
-                            'created_by': user_id
-                        })
-
-                        return make_response(response), 201
-                else:
-                    # Get all buckets created by user
-                    buckets = Bucketlist.query.filter_by(created_by=user_id)
-                    results = []
-                    for item in buckets:
-                        obj = {
-                            'id': item.id,
-                            'name': item.name,
-                            'date_created': item.date_created,
-                            'date_modified': item.date_modified,
-                            'created_by': item.created_by
-                        }
-                        results.append(obj)
-
-                    return make_response(jsonify(results)), 200
-            else:
-                # user id is a string(error)
-                message = user_id
-                response = {
-                    'message': message
+                return make_response(response), 201
+        else:
+            # Get all buckets created by user
+            buckets = Bucketlist.query.filter_by(created_by=user_id)
+            results = []
+            for item in buckets:
+                obj = {
+                    'id': item.id,
+                    'name': item.name,
+                    'date_created': item.date_created,
+                    'date_modified': item.date_modified,
+                    'created_by': item.created_by
                 }
-                return make_response(jsonify(response)), 401
+                results.append(obj)
+
+            return make_response(jsonify(results)), 200
 
     @app.route('/bucketlist/<int:id>', methods=['PUT', 'GET', 'DELETE'])
     def bucket_edit(id, **kwargs):
