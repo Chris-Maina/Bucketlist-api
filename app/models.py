@@ -32,7 +32,7 @@ class User(db.Model):
         """ Save user in the db """
         db.session.add(self)
         db.session.commit()
-        
+
     def generate_token(self, user_id):
         """Code to generate and encode a token before its sent to user"""
         try:
@@ -77,6 +77,8 @@ class Bucketlist(db.Model):
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(),
                               onupdate=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
+    bucketactivities = db.relationship(
+        'BucketActivities', order_by="BucketActivities.id", cascade="all, delete-orphan")
 
     def __init__(self, name, created_by):
         """Initialize bucket with name and user who created it"""
@@ -101,3 +103,40 @@ class Bucketlist(db.Model):
     def __repr__(self):
         """Returns a representation of a bucketlist instance"""
         return "<Bucketlist: {}>".format(self.name)
+
+
+class BucketActivities(db.Model):
+    """This class represent activities table"""
+    __tablename__ = "activities"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(),
+                              onupdate=db.func.current_timestamp())
+    bucket_id = db.Column(db.Integer, db.Foreignkey(Bucketlist.id))
+
+    def __init__(self, name, bucket_id):
+        """Initialize activity with name and bucket to which it belongs to"""
+        self.name = name
+        self.bucket = bucket_id
+
+    def save(self):
+        """Saves data to db"""
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all(bucket_id):
+        """Gets activities belonging to a bucket"""
+        return BucketActivities.query.filter_by(bucket=bucket_id)
+
+    def delete(self):
+        """Deletes a given activity"""
+        db.session.delete(self)
+        db.session.commit()
+    
+    def __repr__(self):
+        """Returns a representation of a activity instance"""
+        return "<Activities: {}>".format(self.name)
+    
