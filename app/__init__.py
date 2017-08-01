@@ -55,6 +55,29 @@ def create_app(config_name):
                 'message': 'User already exists. Please login.'
             }
             return make_response(jsonify(response)), 202
+    
+    @app.route('/auth/login/', methods=['POST'])
+    def login():
+        """Handles user login"""
+        # Create a user object using their email
+        user = User.query.filter_by(email=request.data['email']).first()
+        # check is user object has sth and password is correct
+        if user and user.password_is_correct(request.data['password']):
+            # generate an access token
+            access_token = user.generate_token(user.id)
+            # if an access token is generated, success status_code=OK!
+            if access_token:
+                response = {
+                    'message': "You are logged in successfully",
+                    'access_token': access_token.decode()
+                }
+                return make_response(jsonify(response)), 200
+        else:
+            # User does not exist, status_code=UNAUTHORIZED
+            response = {
+                'message': "Invalid email or password, Please try agaon"
+            }
+            return make_response(jsonify(response)), 401
 
     @app.route('/bucketlist/', methods=['POST', 'GET'])
     def bucketlists():
