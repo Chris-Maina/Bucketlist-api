@@ -33,12 +33,12 @@ class AuthenticationTestCase(unittest.TestCase):
 
     def test_user_login(self):
         """Test user can login after registration"""
-        res = self.client.post('/auth/register/', data=self.user_details)
+        res = self.client().post('/auth/register/', data=self.user_details)
         self.assertEqual(res.status_code, 201)
-        login_res = self.client().post('/auth/login', data=self.user_details)
+        login_res = self.client().post('/auth/login/', data=self.user_details)
         # Get the response in json format
         result = json.loads(login_res.data.decode())
         # Test response
-        self.assertEqual(result['message'], "You logged in successfully")
+        self.assertEqual(result['message'], "You are logged in successfully")
         self.assertEqual(login_res.status_code, 200)
         self.assertTrue(result['access_token'])
