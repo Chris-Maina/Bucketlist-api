@@ -1,6 +1,5 @@
 # test_bucketlist.py
 import unittest
-import os
 import json
 from app import create_app, db
 
@@ -68,7 +67,7 @@ class BucketlistTestCase(unittest.TestCase):
         res = self.client().get('/bucketlist/',
                                 headers=dict(
                                     Authorization="Bearer " + access_token),
-                                )
+                            )
         self.assertEqual(res.status_code, 200)
         self.assertIn('Go to Egypt', str(res.data))
 
@@ -146,7 +145,7 @@ class BucketlistTestCase(unittest.TestCase):
         bucket_created = json.loads(res.data.decode())
         # get bucket using its id
         result = self.client().get('/bucketlist/{}'.format(bucket_created['id']),
-                                    headers=dict(Authorization="Bearer "+ access_token))
+                                headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 200)
         self.assertIn('Go to Egypt', str(result.data))
 
