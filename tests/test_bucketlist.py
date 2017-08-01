@@ -14,7 +14,7 @@ class BucketlistTestCase(unittest.TestCase):
         """
         self.app = create_app(config_name="testing")
         self.client = self.app.test_client
-        self.bucketlist = {'name': 'Go to Borabora for trip'}
+        self.bucketlist = {'name': 'Go to Egypt for trip'}
         # test user
         self.user_details = {
             'email': 'test@gmail.com',
@@ -49,7 +49,7 @@ class BucketlistTestCase(unittest.TestCase):
                                      Authorization="Bearer " + access_token),
                                  data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
-        self.assertIn('Go to Borabora', str(res.data))
+        self.assertIn('Go to Egypt', str(res.data))
 
     def test_api_can_get_all_buckets(self):
         """Test API can get buckets using GET"""
@@ -70,7 +70,7 @@ class BucketlistTestCase(unittest.TestCase):
                                     Authorization="Bearer " + access_token),
                                 )
         self.assertEqual(res.status_code, 200)
-        self.assertIn('Go to Borabora', str(res.data))
+        self.assertIn('Go to Egypt', str(res.data))
 
     def test_bucket_can_be_edited(self):
         """Test API can edit an existing bucket using PUT"""
@@ -118,15 +118,37 @@ class BucketlistTestCase(unittest.TestCase):
 
         # delete bucket created
         res = self.client().delete('/bucketlist/{}'.format(bucket_to_delete['id']),
-                                    headers=dict(Authorization="Bearer "+ access_token)
-                                    )
+                                   headers=dict(
+                                       Authorization="Bearer " + access_token)
+                                   )
         self.assertEqual(res.status_code, 200)
 
         # Test to see if it exists after deletion
         results = self.client().get('/bucketlist/{}'.format(bucket_to_delete['id']),
-                                    headers=dict(Authorization="Bearer "+ access_token)
+                                    headers=dict(
+                                        Authorization="Bearer " + access_token)
                                     )
         self.assertEqual(results.status_code, 404)
+
+    def test_get_bucket_by_id(self):
+        """Test API can get a bucket by its ID"""
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        # create a bucket
+        res = self.client().post('/bucketlist/',
+                                 headers=dict(
+                                     Authorization="Bearer " + access_token),
+                                 data=self.bucketlist)
+        self.assertEqual(res.status_code, 201)
+        # get created bucket in json form
+        bucket_created = json.loads(res.data.decode())
+        # get bucket using its id
+        result = self.client().get('/bucketlist/{}'.format(bucket_created['id']),
+                                    headers=dict(Authorization="Bearer "+ access_token))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Go to Egypt', str(result.data))
 
     def tearDown(self):
         """teardown all variables"""
