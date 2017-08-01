@@ -14,15 +14,38 @@ class BucketlistTestCase(unittest.TestCase):
         self.app = create_app(config_name="testing")
         self.client = self.app.test_client
         self.bucketlist = {'name':'Go to Borabora for trip'}
+        # test user
+        self.user_details = {
+            'email': 'test@gmail.com',
+            'password': 'password123'
+        }
 
         # binds the app to the current context
         with self.app.app_context():
             # create all tables
+            db.session.close()
+            db.drop_all()
             db.create_all()
+
+    def register_user(self):
+        """Registers a user"""
+        return self.client().post('/auth/register/', data=self.user_details)
+
+    def login_user(self):
+        """Registers a user"""
+        return self.client().post('/auth/login/', data=self.user_details)
 
     def test_bucketlist_creation(self):
         """ Test API can creat a bucket using POST """
-        res = self.client().post('/bucketlist/', data=self.bucketlist)
+        # Register,login user and get access token
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        #create a bucket
+        res = self.client().post('/bucketlist/',
+            headers=dict(Authorization="Bearer "+access_token),
+            data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Go to Borabora', str(res.data))
     
