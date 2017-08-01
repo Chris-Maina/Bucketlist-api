@@ -22,12 +22,23 @@ class AuthenticationTestCase(unittest.TestCase):
             db.drop_all()
             db.create_all()
 
-        def test_registration(self):
-            """ Test if registration works"""
-            res = self.client().post('/auth/register', data=self.user_details)
-            # get json format for the returned results
-            result = json.loads(res.data.decode())
-            # assert success message and a 201 status code
-            self.assertEqual(result['message'], "You have been registered successfully. Please login")
-            self.assertEqual(res.status_code, 201)
+    def test_registration(self):
+        """ Test if registration works"""
+        res = self.client().post('/auth/register/', data=self.user_details)
+        # get json format for the returned results
+        result = json.loads(res.data.decode())
+        # assert success message and a 201 status code
+        self.assertEqual(result['message'], "You have been registered successfully. Please login")
+        self.assertEqual(res.status_code, 201)
 
+    def test_user_login(self):
+        """Test user can login after registration"""
+        res = self.client.post('/auth/register/', data=self.user_details)
+        self.assertEqual(res.status_code, 201)
+        login_res = self.client().post('/auth/login', data=self.user_details)
+        # Get the response in json format
+        result = json.loads(login_res.data.decode())
+        # Test response
+        self.assertEqual(result['message'], "You logged in successfully")
+        self.assertEqual(login_res.status_code, 200)
+        self.assertTrue(result['access_token'])
