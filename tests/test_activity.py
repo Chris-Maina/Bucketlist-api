@@ -126,3 +126,31 @@ class BucketActivitiesTestCase(unittest.TestCase):
                                     headers=dict(
                                         Authorization="Bearer " + self.access_token))
         self.assertIn('Sky diving', str(results.data))
+
+    def test_activity_can_be_deleted(self):
+        """Test API can delete a bucket"""
+        # create a bucket
+        res = self.register_login_get_token()
+        self.assertEqual(res.status_code, 201)
+
+        # create a activity
+        res = self.client().post('/bucketlist/1/activities',
+                                 headers=dict(
+                                     Authorization="Bearer " + self.access_token),
+                                 data={'name': 'Sky dive'})
+        self.assertEqual(res.status_code, 201)
+
+        # get activity created
+        activity_created = json.loads(res.data.decode())
+
+        # delete activity
+        res = self.client().delete('/bucketlist/1/activities/{}'.format(activity_created['id']),
+                                   headers=dict(
+            Authorization="Bearer " + self.access_token))
+        self.assertEqual(res.status_code, 200)
+
+        # Test to see if activity is deleted
+        res = self.client().get('/bucketlist/1/activities/{}'.format(activity_created['id']),
+                                headers=dict(
+                                    Authorization="Bearer " + self.access_token))
+        self.assertEqual(res.status_code, 404)
