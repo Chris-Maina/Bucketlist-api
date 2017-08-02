@@ -18,6 +18,8 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     bucketlists = db.relationship(
         'Bucketlist', order_by='Bucketlist.id', cascade="all, delete-orphan")
+    bucketactivities = db.relationship(
+        'BucketActivities', order_by='BucketActivities.id', cascade="all, delete-orphan")
 
     def __init__(self, email, password):
         """Initialize user with email and password"""
@@ -107,19 +109,21 @@ class Bucketlist(db.Model):
 
 class BucketActivities(db.Model):
     """This class represent activities table"""
-    __tablename__ = "activities"
+    __tablename__ = 'activities'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(),
                               onupdate=db.func.current_timestamp())
-    bucket_id = db.Column(db.Integer, db.Foreignkey(Bucketlist.id))
+    bucket_id = db.Column(db.Integer, db.ForeignKey(Bucketlist.id))
+    created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    def __init__(self, name, bucket_id):
+    def __init__(self, name, bucket_id, created_by):
         """Initialize activity with name and bucket to which it belongs to"""
         self.name = name
         self.bucket = bucket_id
+        self.created_by = created_by
 
     def save(self):
         """Saves data to db"""
@@ -127,16 +131,15 @@ class BucketActivities(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all(bucket_id):
+    def get_all(bucket_id, created_by):
         """Gets activities belonging to a bucket"""
-        return BucketActivities.query.filter_by(bucket=bucket_id)
+        return BucketActivities.query.filter_by(bucket=bucket_id, user=created_by)
 
     def delete(self):
         """Deletes a given activity"""
         db.session.delete(self)
         db.session.commit()
-    
+
     def __repr__(self):
         """Returns a representation of a activity instance"""
         return "<Activities: {}>".format(self.name)
-    
