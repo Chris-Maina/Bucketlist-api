@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/Chris-Maina/Bucketlist-api.svg?branch=develop)](https://travis-ci.org/Chris-Maina/Bucketlist-api)
-
-[![Coverage Status](https://coveralls.io/repos/github/Chris-Maina/Bucketlist-api/badge.svg?branch=develop)](https://coveralls.io/github/Chris-Maina/Bucketlist-api?branch=develop)
+[![Build Status](https://travis-ci.org/Chris-Maina/Bucketlist-api.svg?branch=develop)](https://travis-ci.org/Chris-Maina/Bucketlist-api)     [![Coverage Status](https://coveralls.io/repos/github/Chris-Maina/Bucketlist-api/badge.svg?branch=develop)](https://coveralls.io/github/Chris-Maina/Bucketlist-api?branch=develop)
 
 # Bucketlist-api
 Flask API for bucketlist application
