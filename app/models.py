@@ -40,7 +40,7 @@ class User(db.Model):
         try:
             # set up a payload with an expiration time
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=5),
+                'exp': datetime.utcnow() + timedelta(minutes=10),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }
@@ -88,7 +88,7 @@ class Bucketlist(db.Model):
         self.created_by = created_by
 
     def save(self):
-        """Saves data to db"""
+        """Saves data """
         db.session.add(self)
         db.session.commit()
 
@@ -131,8 +131,8 @@ class BucketActivities(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all(bucket_id, created_by):
-        """Gets activities belonging to a bucket"""
+    def get_all_items(bucket_id, created_by):
+        """Gets activities belonging to a bucket and creator"""
         return BucketActivities.query.filter_by(bucket_id=bucket_id, created_by=created_by)
 
     def delete(self):
