@@ -122,7 +122,7 @@ class BucketActivities(db.Model):
     def __init__(self, name, bucket_id, created_by):
         """Initialize activity with name and bucket to which it belongs to"""
         self.name = name
-        self.bucket = bucket_id
+        self.bucket_id = bucket_id
         self.created_by = created_by
 
     def save(self):
@@ -133,7 +133,7 @@ class BucketActivities(db.Model):
     @staticmethod
     def get_all(bucket_id, created_by):
         """Gets activities belonging to a bucket"""
-        return BucketActivities.query.filter_by(bucket=bucket_id, user=created_by)
+        return BucketActivities.query.filter_by(bucket_id=bucket_id, created_by=created_by)
 
     def delete(self):
         """Deletes a given activity"""
