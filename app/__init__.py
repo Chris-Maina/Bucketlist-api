@@ -135,18 +135,18 @@ def create_app(config_name):
 
             return make_response(jsonify(results)), 200
 
-    @app.route('/bucketlist/<int:id>', methods=['PUT', 'GET', 'DELETE'])
+    @app.route('/bucketlist/<int:bid>', methods=['PUT', 'GET', 'DELETE'])
     @auth_required
-    def bucket_edit(id, **kwargs):
+    def bucket_edit(bid, **kwargs):
         """Handles editing and deletion of specific bucket using id"""
         # retrieve a bucket using its ID
-        bucket = Bucketlist.query.filter_by(id=id).first()
+        bucket = Bucketlist.query.filter_by(id=bid).first()
         if not bucket:
             # if empty raise a 404 error. No bucket with this ID
             abort(404)
 
         if request.method == 'PUT':
-            # obtain new name form request
+            # obtain new name from request
             name = str(request.data.get('name', ''))
             bucket.name = name
             bucket.save()
@@ -176,28 +176,28 @@ def create_app(config_name):
             })
             return make_response(response), 200
 
-    @app.route('/bucketlist/<int:id>/activities', methods=['POST', 'GET'])
+    @app.route('/bucketlist/<int:bid>/activities', methods=['POST', 'GET'])
     @auth_required
-    def activity(id, user_id):
+    def activity(bid, user_id):
         """Handles creation of activities"""
         if request.method == 'POST':
             name = str(request.data.get('name', ''))
             if name:
                 # there is a name
-                bucketactivities = BucketActivities(name,id,user_id)
+                bucketactivities = BucketActivities(name=name, bucket_id=bid, created_by=user_id)
                 bucketactivities.save()
                 response = jsonify({
                     'id': bucketactivities.id,
                     'name': bucketactivities.name,
                     'date_created': bucketactivities.date_created,
                     'date_modified': bucketactivities.date_modified,
-                    'bucket_id': bucketactivities.bucket,
+                    'bucket_id': bid,
                     'created_by': user_id
                 })
                 return make_response(response), 201
         else:
             # Get all activites for a bucket id and user
-            activities = BucketActivities.query.filter_by(bucket_id=id,created_by=user_id)
+            activities = BucketActivities.query.filter_by(bucket_id=bid,created_by=user_id)
             results = []
             for item in activities:
                 obj = {
@@ -205,13 +205,52 @@ def create_app(config_name):
                     'name': item.name,
                     'date_created': item.date_created,
                     'date_modified': item.date_modified,
-                    'bucket_id': item.bucket,
-                    'created_by': item.created_by
+                    'bucket_id': bid,
+                    'created_by': user_id
                 }
                 results.append(obj)
 
             return make_response(jsonify(results)), 200
 
+    @app.route('/bucketlist/<int:bid>/activities/<int:aid>', methods=['PUT', 'GET', 'DELETE'])
+    @auth_required
+    def activity_edit(aid,bid,user_id):
+        """Handles getting an activity, editting and deleting it using an ID"""
+        # retrieve  activity using its ID
+        activity = BucketActivities.query.filter_by(id=aid, bucket_id=bid, created_by=user_id).first()
+        if not activity:
+            # if empty raise a 404 error. No activity with this bucket_id=bid and created_by=user_id
+            abort(404)
+        if request.method == 'PUT':
+            # obtain new name from request
+            name = str(request.data.get('name', ''))
+            activity.name = name
+            activity.save()
+            response = jsonify({
+                'id': activity.id,
+                'name': activity.name,
+                'date_created': activity.date_created,
+                'date_modified': activity.date_modified,
+                'bucket_id': activity.bucket_id,
+                'created_by': activity.created_by
+            })
+            return make_response(response), 200
+        elif request.method == 'DELETE':
+            activity.delete()
+            return {
+                'message': "activity {} deleted".format(activity['id'])
+            }, 200
+        else:
+            # handle GET
+            response = jsonify({
+                'id': activity.id,
+                'name': activity.name,
+                'date_created': activity.date_created,
+                'date_modified': activity.date_modified,
+                'bucket_id': activity.bucket_id,
+                'created_by': activity.created_by
+            })
+            return make_response(response), 200
 
 
     return app
