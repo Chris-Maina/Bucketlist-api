@@ -154,3 +154,6 @@ class BucketActivitiesTestCase(unittest.TestCase):
                                 headers=dict(
                                     Authorization="Bearer " + self.access_token))
         self.assertEqual(res.status_code, 404)
+
+if __name__ == "__main__":
+    unittest.main()
