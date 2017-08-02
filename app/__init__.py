@@ -18,7 +18,7 @@ def create_app(config_name):
      loads it with configs using app.config,
      connects it with DB,
      returns it  """
-    from models import Bucketlist, User
+    from models import Bucketlist, User, BucketActivities
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -175,4 +175,43 @@ def create_app(config_name):
                 'created_by': bucket.created_by
             })
             return make_response(response), 200
+
+    @app.route('/bucketlist/<int:id>/activities', methods=['POST', 'GET'])
+    @auth_required
+    def activity(id, user_id):
+        """Handles creation of activities"""
+        if request.method == 'POST':
+            name = str(request.data.get('name', ''))
+            if name:
+                # there is a name
+                bucketactivities = BucketActivities(name,id,user_id)
+                bucketactivities.save()
+                response = jsonify({
+                    'id': bucketactivities.id,
+                    'name': bucketactivities.name,
+                    'date_created': bucketactivities.date_created,
+                    'date_modified': bucketactivities.date_modified,
+                    'bucket_id': bucketactivities.bucket,
+                    'created_by': user_id
+                })
+                return make_response(response), 201
+        else:
+            # Get all activites for a bucket id and user
+            activities = BucketActivities.query.filter_by(bucket_id=id,created_by=user_id)
+            results = []
+            for item in activities:
+                obj = {
+                    'id': item.id,
+                    'name': item.name,
+                    'date_created': item.date_created,
+                    'date_modified': item.date_modified,
+                    'bucket_id': item.bucket,
+                    'created_by': item.created_by
+                }
+                results.append(obj)
+
+            return make_response(jsonify(results)), 200
+
+
+
     return app
