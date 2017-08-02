@@ -71,9 +71,58 @@ class BucketActivitiesTestCase(unittest.TestCase):
                                      Authorization="Bearer " + self.access_token),
                                  data=self.activity)
         self.assertEqual(res.status_code, 201)
-        
+
         # get activities
         res = self.client().get('/bucketlist/1/activities',
-                                 headers=dict(
-                                     Authorization="Bearer " + self.access_token))
+                                headers=dict(
+                                    Authorization="Bearer " + self.access_token))
         self.assertEqual(res.status_code, 200)
+
+    def test_api_get_activity_by_id(self):
+        """ Test API can get activity by ID using GET """
+        # create a bucket
+        res = self.register_login_get_token()
+        self.assertEqual(res.status_code, 201)
+
+        # create a activity
+        res = self.client().post('/bucketlist/1/activities',
+                                 headers=dict(
+                                     Authorization="Bearer " + self.access_token),
+                                 data=self.activity)
+        self.assertEqual(res.status_code, 201)
+        # get activity created
+        activity_created = json.loads(res.data.decode())
+        # get activity by its ID
+        res = self.client().get('/bucketlist/1/activities/{}'.format(activity_created['id']),
+                                headers=dict(
+            Authorization="Bearer " + self.access_token))
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('Shop in', str(res.data))
+
+    def test_activity_can_be_edited(self):
+        """ Test API can edit activity using PUT """
+        # create a bucket
+        res = self.register_login_get_token()
+        self.assertEqual(res.status_code, 201)
+
+        # create a activity
+        res = self.client().post('/bucketlist/1/activities',
+                                 headers=dict(
+                                     Authorization="Bearer " + self.access_token),
+                                 data={'name': 'Sky dive'})
+        self.assertEqual(res.status_code, 201)
+
+        # get activity created
+        activity_created = json.loads(res.data.decode())
+
+        # edit activity
+        res = self.client().put('/bucketlist/1/activities/{}'.format(activity_created['id']),
+                                headers=dict(
+                                    Authorization="Bearer " + self.access_token),
+                                data={'name': 'Sky diving in Egypt'})
+
+        # get edited activity
+        results = self.client().get('/bucketlist/1/activities/{}'.format(activity_created['id']),
+                                    headers=dict(
+                                        Authorization="Bearer " + self.access_token))
+        self.assertIn('Sky diving', str(results.data))
