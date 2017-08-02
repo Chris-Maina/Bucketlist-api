@@ -105,9 +105,17 @@ def create_app(config_name):
     @auth_required
     def bucketlists(user_id):
         """Handles bucket creation"""
-        if request.method == "POST":
+        if request.method == 'POST':
             name = str(request.data.get('name', ''))
             if name:
+                # there is a name,check if bucket exists
+                if Bucketlist.query.filter_by(name=name).first() is not None:
+                    # bucket exists, status code= Found
+                    response = jsonify({
+                        'message': "Bucket name already exists. Please use different name"
+                    })
+                    return make_response(response), 302
+
                 bucketlist = Bucketlist(name=name, created_by=user_id)
                 bucketlist.save()
                 response = jsonify({
@@ -117,8 +125,13 @@ def create_app(config_name):
                     'date_modified': bucketlist.date_modified,
                     'created_by': user_id
                 })
-
                 return make_response(response), 201
+            else:
+                # no name, status code=No content
+                response = {
+                    'message': "Please enter a bucket name"
+                }
+                return make_response(jsonify(response)), 204
         else:
             # Get all buckets created by user
             buckets = Bucketlist.query.filter_by(created_by=user_id)
@@ -143,11 +156,21 @@ def create_app(config_name):
         bucket = Bucketlist.query.filter_by(id=bid).first()
         if not bucket:
             # if empty raise a 404 error. No bucket with this ID
-            abort(404)
+            response = {
+                'message': "No such bucket"
+            }
+            return make_response(jsonify(response)), 404
 
         if request.method == 'PUT':
             # obtain new name from request
             name = str(request.data.get('name', ''))
+            if not name:
+                # no name, status code=No content
+                response = {
+                    'message': "Please enter a bucket name"
+                }
+                return make_response(jsonify(response)), 204
+
             bucket.name = name
             bucket.save()
             response = jsonify({
@@ -162,7 +185,7 @@ def create_app(config_name):
         elif request.method == 'DELETE':
             bucket.delete()
             return {
-                'message': "bucket {} deleted".format(bucket['id'])
+                'message': "bucket {} deleted successfully".format(bucket.name)
             }, 200
 
         else:
@@ -183,8 +206,16 @@ def create_app(config_name):
         if request.method == 'POST':
             name = str(request.data.get('name', ''))
             if name:
-                # there is a name
-                bucketactivities = BucketActivities(name=name, bucket_id=bid, created_by=user_id)
+                # there is a name,check if activity exists
+                if BucketActivities.query.filter_by(name=name).first() is not None:
+                    # activity exists, status code= Found
+                    response = jsonify({
+                        'message': "Activity name already exists. Please use different name"
+                    })
+                    return make_response(response), 302
+
+                bucketactivities = BucketActivities(
+                    name=name, bucket_id=bid, created_by=user_id)
                 bucketactivities.save()
                 response = jsonify({
                     'id': bucketactivities.id,
@@ -195,9 +226,16 @@ def create_app(config_name):
                     'created_by': user_id
                 })
                 return make_response(response), 201
+            else:
+                # no name, status code=No content
+                response = {
+                    'message': "Please enter an activity name"
+                }
+                return make_response(jsonify(response)), 204
         else:
             # Get all activites for a bucket id and user
-            activities = BucketActivities.query.filter_by(bucket_id=bid,created_by=user_id)
+            activities = BucketActivities.query.filter_by(
+                bucket_id=bid, created_by=user_id)
             results = []
             for item in activities:
                 obj = {
@@ -214,16 +252,28 @@ def create_app(config_name):
 
     @app.route('/bucketlist/<int:bid>/activities/<int:aid>', methods=['PUT', 'GET', 'DELETE'])
     @auth_required
-    def activity_edit(aid,bid,user_id):
+    def activity_edit(aid, bid, user_id):
         """Handles getting an activity, editting and deleting it using an ID"""
         # retrieve  activity using its ID
-        activity = BucketActivities.query.filter_by(id=aid, bucket_id=bid, created_by=user_id).first()
+        activity = BucketActivities.query.filter_by(
+            id=aid, bucket_id=bid, created_by=user_id).first()
         if not activity:
-            # if empty raise a 404 error. No activity with this bucket_id=bid and created_by=user_id
-            abort(404)
+            # if empty raise a 404,Not found error. No activity with this bucket_id=bid and created_by=user_id
+            response = {
+                'message': "No such activity"
+            }
+            return make_response(jsonify(response)), 404
+
         if request.method == 'PUT':
             # obtain new name from request
             name = str(request.data.get('name', ''))
+            if not name:
+                # no name, status code=No content
+                response = {
+                    'message': "Please enter an acitvity name"
+                }
+                return make_response(jsonify(response)), 204
+
             activity.name = name
             activity.save()
             response = jsonify({
@@ -235,11 +285,13 @@ def create_app(config_name):
                 'created_by': activity.created_by
             })
             return make_response(response), 200
+
         elif request.method == 'DELETE':
             activity.delete()
             return {
-                'message': "activity {} deleted".format(activity['id'])
+                'message': "activity {} deleted".format(activity.name)
             }, 200
+
         else:
             # handle GET
             response = jsonify({
@@ -251,6 +303,5 @@ def create_app(config_name):
                 'created_by': activity.created_by
             })
             return make_response(response), 200
-
 
     return app
