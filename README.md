@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Chris-Maina/Bucketlist-api.svg?branch=master)](https://travis-ci.org/Chris-Maina/Bucketlist-api)
+[![Build Status](https://travis-ci.org/Chris-Maina/Bucketlist-api.svg?branch=develop)](https://travis-ci.org/Chris-Maina/Bucketlist-api)
 
 # Bucketlist-api
 Flask API for bucketlist application
