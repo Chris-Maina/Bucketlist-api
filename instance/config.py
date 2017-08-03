@@ -1,7 +1,5 @@
 # /instance/config.py
 
-import os
-
 class Config(object):
     """Parent config class."""
     DEBUG = False
