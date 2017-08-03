@@ -24,7 +24,8 @@ Install dependencies:
   
 ## Running application
 To start application:
-  * python run
+  * python run.py
+  
 Access the endpoints using your preferred client e.g. Postman
 
 #### Endpoints
