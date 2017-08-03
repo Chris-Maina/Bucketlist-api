@@ -109,7 +109,7 @@ def create_app(config_name):
             name = str(request.data.get('name', ''))
             if name:
                 # there is a name,check if bucket exists
-                if Bucketlist.query.filter_by(name=name).first() is not None:
+                if Bucketlist.query.filter_by(name=name,created_by=user_id).first() is not None:
                     # bucket exists, status code= Found
                     response = jsonify({
                         'message': "Bucket name already exists. Please use different name"
@@ -207,7 +207,7 @@ def create_app(config_name):
             name = str(request.data.get('name', ''))
             if name:
                 # there is a name,check if activity exists
-                if BucketActivities.query.filter_by(name=name).first() is not None:
+                if BucketActivities.query.filter_by(name=name, bucket_id=bid).first() is not None:
                     # activity exists, status code= Found
                     response = jsonify({
                         'message': "Activity name already exists. Please use different name"
