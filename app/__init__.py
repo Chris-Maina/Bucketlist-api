@@ -18,7 +18,7 @@ def create_app(config_name):
      loads it with configs using app.config,
      connects it with DB,
      returns it  """
-    from models import Bucketlist, User, BucketActivities
+    from app.models import Bucketlist, User, BucketActivities
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
