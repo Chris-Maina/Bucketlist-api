@@ -55,59 +55,72 @@ def create_app(config_name):
                                    "Login by sending a POST request to"
                                    " /auth/login to get started."})
 
-    @app.route('/auth/register/', methods=['POST'])
+    @app.route('/auth/register/', methods=['POST','GET'])
     def register():
         """Handles registration of users"""
-        # Query to see if a user already exists
-        user = User.query.filter_by(email=request.data['email']).first()
-        if not user:
-            # No user, so register
-            try:
-                # Register user
-                email = request.data['email']
-                password = request.data['password']
-                user = User(email=email, password=password)
-                user.save()
+        if request.method == 'POST':
+            # Query to see if a user already exists
+            user = User.query.filter_by(email=request.data['email']).first()
+            if not user:
+                # No user, so register
+                try:
+                    # Register user
+                    email = request.data['email']
+                    password = request.data['password']
+                    user = User(email=email, password=password)
+                    user.save()
+                    response = {
+                        'message': 'You have been registered successfully. Please login'
+                    }
+                    # return the response and a status code 201 (created)
+                    return make_response(jsonify(response)), 201
+                except Exception as e:
+                    # when there is an error, return error as message
+                    response = {
+                        'message': str(e)
+                    }
+                    return make_response(jsonify(response)), 401
+            else:
+                # There is a user. Return a message user already exists
                 response = {
-                    'message': 'You have been registered successfully. Please login'
+                    'message': 'User already exists. Please login.'
                 }
-                # return the response and a status code 201 (created)
-                return make_response(jsonify(response)), 201
-            except Exception as e:
-                # when there is an error, return error as message
+                return make_response(jsonify(response)), 202
+        else:
+            # request method GET
+            response = jsonify({"message": "To register,"
+                                        "send a POST request with email and password"
+                                        " to /auth/register/"})
+            return make_response(response), 200
+
+    @app.route('/auth/login/', methods=['POST', 'GET'])
+    def login():
+        """Handles user login"""
+        if request.method == 'POST':
+            # Query to see if a user already exists
+            user = User.query.filter_by(email=request.data['email']).first()
+            # check is user object has sth and password is correct
+            if user and user.password_is_correct(request.data['password']):
+                # generate an access token
+                access_token = user.generate_token(user.id)
+                # if an access token is generated, success status_code=OK!
+                if access_token:
+                    response = {
+                        'message': "You are logged in successfully",
+                        'access_token': access_token.decode()
+                    }
+                    return make_response(jsonify(response)), 200
+            else:
+                # User does not exist, status_code=UNAUTHORIZED
                 response = {
-                    'message': str(e)
+                    'message': "Invalid email or password, Please try again"
                 }
                 return make_response(jsonify(response)), 401
         else:
-            # There is a user. Return a message user already exists
-            response = {
-                'message': 'User already exists. Please login.'
-            }
-            return make_response(jsonify(response)), 202
-
-    @app.route('/auth/login/', methods=['POST'])
-    def login():
-        """Handles user login"""
-        # Create a user object using their email
-        user = User.query.filter_by(email=request.data['email']).first()
-        # check is user object has sth and password is correct
-        if user and user.password_is_correct(request.data['password']):
-            # generate an access token
-            access_token = user.generate_token(user.id)
-            # if an access token is generated, success status_code=OK!
-            if access_token:
-                response = {
-                    'message': "You are logged in successfully",
-                    'access_token': access_token.decode()
-                }
-                return make_response(jsonify(response)), 200
-        else:
-            # User does not exist, status_code=UNAUTHORIZED
-            response = {
-                'message': "Invalid email or password, Please try again"
-            }
-            return make_response(jsonify(response)), 401
+            # request method GET
+            response = jsonify({"message": "To login,"
+                                        "send a POST request to /auth/login/"})
+            make_response(response), 200
 
     @app.route('/bucketlist/', methods=['POST', 'GET'])
     @auth_required
