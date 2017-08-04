@@ -172,7 +172,7 @@ def create_app(config_name):
 
     @app.route('/bucketlist/<int:bid>', methods=['PUT', 'GET', 'DELETE'])
     @auth_required
-    def dummy_bucket_edit(bid, **kwargs):
+    def dummy_bucket_edit(bid):
         """Handles editing and deletion of specific bucket using id"""
         # retrieve a bucket using its ID
         bucket = Bucketlist.query.filter_by(id=bid).first()
