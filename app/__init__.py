@@ -47,6 +47,14 @@ def create_app(config_name):
                     return make_response(jsonify(response)), 401
         return wrapper
 
+    @app.route('/')
+    def index():
+        return jsonify({"message": "Welcome to the BucketList API."
+                                   " Register a new user by sending a"
+                                   " POST request to /auth/register. "
+                                   "Login by sending a POST request to"
+                                   " /auth/login to get started."})
+
     @app.route('/auth/register/', methods=['POST'])
     def register():
         """Handles registration of users"""
@@ -109,7 +117,7 @@ def create_app(config_name):
             name = str(request.data.get('name', ''))
             if name:
                 # there is a name,check if bucket exists
-                if Bucketlist.query.filter_by(name=name,created_by=user_id).first() is not None:
+                if Bucketlist.query.filter_by(name=name, created_by=user_id).first() is not None:
                     # bucket exists, status code= Found
                     response = jsonify({
                         'message': "Bucket name already exists. Please use different name"
