@@ -51,9 +51,9 @@ def create_app(config_name):
     def index():
         return jsonify({"message": "Welcome to the BucketList API."
                                    " Register a new user by sending a"
-                                   " POST request to /auth/register. "
+                                   " POST request to /auth/register/. "
                                    "Login by sending a POST request to"
-                                   " /auth/login to get started."})
+                                   " /auth/login/ to get started."})
 
     @app.route('/auth/register/', methods=['POST','GET'])
     def register():
