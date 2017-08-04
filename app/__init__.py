@@ -48,15 +48,16 @@ def create_app(config_name):
         return wrapper
 
     @app.route('/')
-    def index():
+    def dummy_index():
+        """Index page"""
         return jsonify({"message": "Welcome to the BucketList API."
                                    " Register a new user by sending a"
                                    " POST request to /auth/register/. "
                                    "Login by sending a POST request to"
                                    " /auth/login/ to get started."})
 
-    @app.route('/auth/register/', methods=['POST','GET'])
-    def register():
+    @app.route('/auth/register/', methods=['POST', 'GET'])
+    def dummy_register():
         """Handles registration of users"""
         if request.method == 'POST':
             # Query to see if a user already exists
@@ -89,12 +90,12 @@ def create_app(config_name):
         else:
             # request method GET
             response = jsonify({"message": "To register,"
-                                        "send a POST request with email and password"
-                                        " to /auth/register/"})
+                                           "send a POST request with email and password"
+                                           " to /auth/register/"})
             return make_response(response), 200
 
     @app.route('/auth/login/', methods=['POST', 'GET'])
-    def login():
+    def dummy_login():
         """Handles user login"""
         if request.method == 'POST':
             # Query to see if a user already exists
@@ -119,12 +120,12 @@ def create_app(config_name):
         else:
             # request method GET
             response = jsonify({"message": "To login,"
-                                        "send a POST request to /auth/login/"})
-            make_response(response), 200
+                                           "send a POST request to /auth/login/"})
+            return make_response(response), 200
 
     @app.route('/bucketlist/', methods=['POST', 'GET'])
     @auth_required
-    def bucketlists(user_id):
+    def dummy_bucketlists(user_id):
         """Handles bucket creation"""
         if request.method == 'POST':
             name = str(request.data.get('name', ''))
@@ -171,7 +172,7 @@ def create_app(config_name):
 
     @app.route('/bucketlist/<int:bid>', methods=['PUT', 'GET', 'DELETE'])
     @auth_required
-    def bucket_edit(bid, **kwargs):
+    def dummy_bucket_edit(bid, **kwargs):
         """Handles editing and deletion of specific bucket using id"""
         # retrieve a bucket using its ID
         bucket = Bucketlist.query.filter_by(id=bid).first()
@@ -222,7 +223,7 @@ def create_app(config_name):
 
     @app.route('/bucketlist/<int:bid>/activities', methods=['POST', 'GET'])
     @auth_required
-    def activity(bid, user_id):
+    def dummy_activity(bid, user_id):
         """Handles creation of activities"""
         if request.method == 'POST':
             name = str(request.data.get('name', ''))
@@ -273,7 +274,7 @@ def create_app(config_name):
 
     @app.route('/bucketlist/<int:bid>/activities/<int:aid>', methods=['PUT', 'GET', 'DELETE'])
     @auth_required
-    def activity_edit(aid, bid, user_id):
+    def dummy_activity_edit(aid, bid, user_id):
         """Handles getting an activity, editting and deleting it using an ID"""
         # retrieve  activity using its ID
         activity = BucketActivities.query.filter_by(
