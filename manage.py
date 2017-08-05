@@ -14,6 +14,5 @@ manager = Manager(app)
 # e.g python manage.py db init
 manager.add_command("db", MigrateCommand)
 
-if __name__=="__main__":
-    port = int(os.environ.get('PORT', 5000))
-    manager.run('', port=port)
+if __name__ == "__main__":
+    manager.run()
