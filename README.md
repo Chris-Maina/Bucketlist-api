@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/06dc6884701a4384b4a826d70fadaa4e)](https://www.codacy.com/app/Chris-Maina/Bucketlist-api?utm_source=github.com&utm_medium=referral&utm_content=Chris-Maina/Bucketlist-api&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/Chris-Maina/Bucketlist-api.svg?branch=develop)](https://travis-ci.org/Chris-Maina/Bucketlist-api)     [![Coverage Status](https://coveralls.io/repos/github/Chris-Maina/Bucketlist-api/badge.svg?branch=develop)](https://coveralls.io/github/Chris-Maina/Bucketlist-api?branch=develop)   [![Code Health](https://landscape.io/github/Chris-Maina/Bucketlist-api/develop/landscape.svg?style=flat)](https://landscape.io/github/Chris-Maina/Bucketlist-api/develop)
 
 # Bucketlist-api
