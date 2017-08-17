@@ -155,26 +155,27 @@ def create_app(config_name):
                 }
                 return make_response(jsonify(response)), 204
         else:
-            #GET request
+            # GET request
+            # initialize search query, page number and limit
             search_query = request.args.get('q')
-            limit = int(request.args.get('limit', 20))
+            limit = int(request.args.get('limit', 10))
             page_no = int(request.args.get('page', 1))
             results = {}
             if type(limit) is not int:
                 response = {
-                    'message':'Limit must be an integer'
+                    'message': 'Limit must be an integer'
                 }
                 return make_response(jsonify(response)), 400
 
             if type(page_no) is not int:
                 response = {
-                    'message':'Page must be an integer'
+                    'message': 'Page must be an integer'
                 }
                 return make_response(jsonify(response)), 400
             if search_query:
                 #?q is supplied sth
                 search_results = Bucketlist.query.filter(
-                    Bucketlist.name.ilike('%'+ search_query+'%')).filter_by(
+                    Bucketlist.name.ilike('%' + search_query + '%')).filter_by(
                         created_by=user_id)
                 if search_results:
                     # search results contain sth
@@ -189,9 +190,45 @@ def create_app(config_name):
                     return make_response(results), 200
                 else:
                     response = {
-                        'message':"There is no such bucket"
+                        'message': "There is no such bucket"
                     }
                     return make_response(jsonify(response)), 404
+            else:
+                #?q doesn't have anything. Return paginated bucketlist
+                all_buckets = []
+                buckets = Bucketlist.query.filter_by(
+                    created_by=user_id).paginate(page_no, limit)
+                if not buckets:
+                    response = jsonify({
+                        "message": "User does not have buckets"
+                    })
+                    return make_response(response), 404
+                for item in buckets.items:
+                    results = {
+                        'id': item.id,
+                        'name': item.name,
+                        'created_by': user_id
+                    }
+                    all_buckets.append(results)
+                next_page = 'None'
+                previous_page = 'None'
+                if buckets.has_next:
+                    next_page = '/bucketlist/?limit={}&page={}'.format(
+                        str(limit),
+                        str(page_no + 1)
+                    )
+                if buckets.has_prev:
+                    previous_page = '/bucketlist/?limit={}&page={}'.format(
+                        str(limit),
+                        str(page_no - 1)
+                    )
+                response = {
+                    'bucketlist': all_buckets,
+                    'previous': previous_page,
+                    'next': next_page
+                }
+                return make_response(jsonify(response)), 200
+
             # Get all buckets created by user
             buckets = Bucketlist.query.filter_by(created_by=user_id)
             results = []
