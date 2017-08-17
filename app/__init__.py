@@ -161,13 +161,13 @@ def create_app(config_name):
             limit = int(request.args.get('limit', 10))
             page_no = int(request.args.get('page', 1))
             results = {}
-            if type(limit) is not int:
+            if not isinstance(limit, int):
                 response = {
                     'message': 'Limit must be an integer'
                 }
                 return make_response(jsonify(response)), 400
 
-            if type(page_no) is not int:
+            if not isinstance(page_no, int):
                 response = {
                     'message': 'Page must be an integer'
                 }
