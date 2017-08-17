@@ -126,7 +126,7 @@ def create_app(config_name):
     @app.route('/bucketlist/', methods=['POST', 'GET'])
     @auth_required
     def dummy_bucketlists(user_id):
-        """Handles bucket creation"""
+        """Handles bucket creation and getting buckets"""
         if request.method == 'POST':
             name = str(request.data.get('name', ''))
             if name:
@@ -155,6 +155,43 @@ def create_app(config_name):
                 }
                 return make_response(jsonify(response)), 204
         else:
+            #GET request
+            search_query = request.args.get('q')
+            limit = int(request.args.get('limit', 20))
+            page_no = int(request.args.get('page', 1))
+            results = {}
+            if type(limit) is not int:
+                response = {
+                    'message':'Limit must be an integer'
+                }
+                return make_response(jsonify(response)), 400
+
+            if type(page_no) is not int:
+                response = {
+                    'message':'Page must be an integer'
+                }
+                return make_response(jsonify(response)), 400
+            if search_query:
+                #?q is supplied sth
+                search_results = Bucketlist.query.filter(
+                    Bucketlist.name.ilike('%'+ search_query+'%')).filter_by(
+                        created_by=user_id)
+                if search_results:
+                    # search results contain sth
+                    for bucket in search_results:
+                        results = jsonify({
+                            'id': bucket.id,
+                            'name': bucket.name,
+                            'date_created': bucket.date_created,
+                            'date_modified': bucket.date_modified,
+                            'created_by': user_id
+                        })
+                    return make_response(results), 200
+                else:
+                    response = {
+                        'message':"There is no such bucket"
+                    }
+                    return make_response(jsonify(response)), 404
             # Get all buckets created by user
             buckets = Bucketlist.query.filter_by(created_by=user_id)
             results = []
