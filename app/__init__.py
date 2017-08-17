@@ -206,8 +206,7 @@ def create_app(config_name):
                 for item in buckets.items:
                     results = {
                         'id': item.id,
-                        'name': item.name,
-                        'created_by': user_id
+                        'name': item.name
                     }
                     all_buckets.append(results)
                 next_page = 'None'
